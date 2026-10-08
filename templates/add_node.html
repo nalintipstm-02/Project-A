@@ -1,0 +1,198 @@
+<!-- add_node.html-->
+{% extends "base.html" %}
+
+{% block title %}{{ node.node_name if node else 'Add Node' }}{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        background-color: #f5f7fb;
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    /* ตกแต่ง Card ของฟอร์ม */
+    .form-card {
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        background-color: #ffffff;
+        max-width: 650px;
+        margin: 2rem auto;
+    }
+
+    /* ปรับแต่ง Label และ Input */
+    .form-label {
+        font-weight: 600;
+        color: #4a5568;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .form-control, .form-select {
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        border: 1px solid #e2e8f0;
+        transition: all 0.2s ease;
+        background-color: #f8fafc;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #4361ee;
+        box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.1);
+        background-color: #ffffff;
+        outline: none;
+    }
+
+    /* ตกแต่งปุ่ม */
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+
+    .btn-primary {
+        background-color: #4361ee;
+        border: none;
+    }
+
+    .btn-primary:hover {
+        background-color: #3751d4;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(67, 97, 238, 0.2);
+    }
+
+    .btn-secondary {
+        background-color: #f1f5f9;
+        border: none;
+        color: #64748b;
+    }
+
+    .btn-secondary:hover {
+        background-color: #e2e8f0;
+        color: #475569;
+    }
+
+    .page-title {
+        color: #2d3748;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+    }
+
+    /* ตกแต่ง Header Icon */
+    .node-icon-header {
+        width: 55px;
+        height: 55px;
+        background: rgba(67, 97, 238, 0.1);
+        color: #4361ee;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 16px;
+        margin: 0 auto 1.5rem;
+        font-size: 1.5rem;
+    }
+</style>
+
+<div class="container py-5">
+    <div class="card form-card">
+        <div class="card-body p-4 p-md-5">
+            
+            <!-- Header -->
+            <div class="text-center mb-5">
+                <div class="node-icon-header">
+                    <i class="bi bi-cpu"></i>
+                </div>
+                <h2 class="page-title mb-1">
+                    {{ node.node_name if node else 'Add New Device Node' }}
+                </h2>
+                <p class="text-muted small">ตั้งค่าและข้อมูลของอุปกรณ์</p>
+            </div>
+
+            <form method="post">
+                <!-- Node Name -->
+                <div class="mb-4">
+                    <label for="node_name" class="form-label text-muted small text-uppercase fw-bold">
+                        <i class="bi bi-tag me-1 text-primary"></i> ชื่ออุปกรณ์
+                    </label>
+                    <input type="text" class="form-control fw-medium" id="node_name" name="node_name" 
+                           placeholder="กรอกชื่ออุปกรณ์"
+                           value="{{ node.node_name if node else '' }}" required>
+                </div>
+
+                <!-- Node Type -->
+                <div class="mb-4">
+                    <label for="node_type" class="form-label text-muted small text-uppercase fw-bold">
+                        <i class="bi bi-list-ul me-1 text-primary"></i> ประเภทอุปกรณ์
+                    </label>
+
+                    <select class="form-select fw-medium" id="node_type" name="node_type" required>
+                        <option value="" disabled selected>เลือกประเภทอุปกรณ์</option>
+                        <option value="led">LED Display</option>
+                        <option value="projector">Projector</option>
+                        <option value="air_conditioner">Air Conditioner</option>
+                        <option value="audio_equipment">Audio Equipment</option>
+                        <option value="computer">Computer</option>
+                        <option value="door">Smart Door</option>
+                    </select>
+                </div>
+
+
+                <!-- Computer Role -->
+                <div class="mb-4" id="computer-role-group" style="display:none;">
+                    <label class="form-label text-muted small text-uppercase fw-bold">
+                        <i class="bi bi-person-badge me-1 text-primary"></i> Computer Role
+                    </label>
+
+                    <select class="form-select fw-medium" name="computer_role">
+                        <option value="">Select role</option>
+                        <option value="teacher">Teacher Computer</option>
+                        <option value="student">Student Computer</option>
+                    </select>
+                </div>
+
+                <!-- Detail -->
+                <div class="mb-5">
+                    <label for="detail" class="form-label text-muted small text-uppercase fw-bold">
+                        <i class="bi bi-card-text me-1 text-primary"></i> รายละเอียด
+                    </label>
+                    <input type="text" class="form-control" id="detail" name="detail"
+                           value="{{ node.detail if node else '' }}" placeholder="รายละเอียดของอุปกรณ์">
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                    <button type="button"
+                            onclick="history.back()"
+                            class="btn btn-secondary px-4 me-md-2">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary px-5 shadow-sm border-0">
+                        <i class="bi bi-cloud-upload me-2"></i>{{ 'Update Node' if node else 'Save Node' }}
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+<script>
+
+const nodeType = document.getElementById("node_type")
+const roleGroup = document.getElementById("computer-role-group")
+
+function toggleRole(){
+
+    if(nodeType.value === "computer"){
+        roleGroup.style.display = "block"
+    }else{
+        roleGroup.style.display = "none"
+    }
+
+}
+
+nodeType.addEventListener("change", toggleRole)
+toggleRole()
+
+</script>
+{% endblock %}

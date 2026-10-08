@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Add Cluster{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        background-color: #f5f7fb;
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    /* ตกแต่ง Card ของฟอร์ม */
+    .form-card {
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        background-color: #ffffff;
+        max-width: 550px;
+        margin: 3rem auto;
+    }
+
+    /* ปรับแต่ง Label และ Input */
+    .form-label {
+        font-weight: 600;
+        color: #4a5568;
+        margin-bottom: 0.6rem;
+        font-size: 0.9rem;
+    }
+
+    .form-control {
+        border-radius: 12px;
+        padding: 0.8rem 1rem;
+        border: 1px solid #e2e8f0;
+        transition: all 0.2s ease;
+        background-color: #f8fafc;
+    }
+
+    .form-control:focus {
+        border-color: #10b981; /* สีเขียวสอดคล้องกับปุ่ม Save */
+        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+        background-color: #ffffff;
+        outline: none;
+    }
+
+    /* ตกแต่งปุ่ม */
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+
+    .btn-success {
+        background-color: #10b981;
+        border: none;
+    }
+
+    .btn-success:hover {
+        background-color: #059669;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+    }
+
+    .btn-secondary {
+        background-color: #f1f5f9;
+        border: none;
+        color: #64748b;
+    }
+
+    .btn-secondary:hover {
+        background-color: #e2e8f0;
+        color: #475569;
+    }
+
+    .page-title {
+        color: #2d3748;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+    }
+
+    .icon-box {
+        width: 50px;
+        height: 50px;
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        margin: 0 auto 1.5rem;
+    }
+</style>
+
+<div class="container py-5">
+    <div class="card form-card">
+        <div class="card-body p-4 p-md-5">
+            <!-- Header Icon & Title -->
+            <div class="text-center">
+                <div class="icon-box">
+                    <i class="bi bi-layers-fill fs-4"></i>
+                </div>
+                <h2 class="page-title mb-1">เพิ่ม Cluster</h2>
+                <p class="text-muted small mb-4">กำหนด Cluster ใหม่ให้กับอาคารนี้</p>
+            </div>
+
+            <form method="post">
+                <div class="mb-4">
+                    <label for="cluster_name" class="form-label text-uppercase small text-muted">
+                        ชื่อ
+                    </label>
+                    <input type="text" class="form-control fw-medium" id="cluster_name" name="cluster_name" 
+                           placeholder="เช่น SC09 ชั้น2" required>
+                </div>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-5">
+                    <button type="button"
+                            onclick="history.back()"
+                            class="btn btn-secondary px-4 me-md-2">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-success px-5 shadow-sm">
+                        <i class="bi bi-save2 me-2"></i>Save
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

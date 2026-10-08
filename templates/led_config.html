@@ -1,0 +1,347 @@
+{% extends "base.html" %}
+
+{% block title %}LED Config - Room {{ room_id }}{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        background-color: #f8fafc;
+    }
+
+    .page-header {
+        margin-bottom: 2rem;
+    }
+
+    .node-badge {
+        background-color: #fef9c3;
+        color: #854d0e;
+        padding: 0.5rem 1rem;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .config-card {
+        border: none;
+        border-radius: 24px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+        background: #ffffff;
+    }
+
+    .group-label {
+        font-size: 0.7rem;
+        font-weight: 800;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .group-label::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: #f1f5f9;
+    }
+
+    .form-control {
+        border-radius: 15px;
+        padding: 0.8rem 1.2rem;
+        border: 1px solid #e2e8f0;
+        background-color: #f8fafc;
+        font-weight: 500;
+    }
+
+    .form-control[readonly] {
+        background-color: #f1f5f9;
+        color: #64748b;
+        border-color: #f1f5f9;
+    }
+
+    .channel-box {
+        background: #f8fafc;
+        border-radius: 16px;
+        padding: 20px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .table td, .table th {
+        vertical-align: middle;
+    }
+</style>
+
+<div class="container py-5">
+
+    <!-- Header -->
+    <div class="page-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">LED Lighting Config</h2>
+            <div class="node-badge">
+                <i class="bi bi-lightbulb-fill"></i>
+                Room {{ room_id }} • Node ID: {{ node.node_id }}
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <!--<a href="{{ url_for('nodes', room_id=room_id) }}"
+               class="btn btn-outline-secondary rounded-pill px-4">
+                <i class="bi bi-arrow-left me-2"></i>Back
+            </a>-->
+
+            <button id="edit-btn"
+                    class="btn btn-primary rounded-pill px-4 shadow-sm">
+                <i class="bi bi-gear-fill me-2"></i>Edit Config
+            </button>
+        </div>
+    </div>
+
+    <div class="card config-card shadow-sm">
+        <div class="card-body p-4 p-md-5">
+
+            <!-- ================= SYSTEM CONFIG ================= -->
+            <h5 class="fw-bold mb-4 text-primary">
+                System Parameters
+            </h5>
+
+            <form method="POST"
+                  action="{{ url_for('config_led', node_id=node.node_id) }}">
+
+                <div class="group-label">MQTT Connection</div>
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        <label class="form-label small fw-bold">Broker Host</label>
+                        <input type="text"
+                               class="form-control"
+                               id="mqtt_broker"
+                               name="mqtt_broker"
+                               value="{{ config.mqtt_broker if config else '' }}"
+                               readonly required>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold">Port</label>
+                        <input type="number"
+                               class="form-control"
+                               id="mqtt_port"
+                               name="mqtt_port"
+                               value="{{ config.mqtt_port if config else '' }}"
+                               readonly required>
+                    </div>
+                </div>
+
+                <div class="group-label">Communication Payload</div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">ON Command</label>
+                        <input type="text"
+                               class="form-control"
+                               id="command_led_on"
+                               name="command_led_on"
+                               value="{{ config.command_led_on if config else '' }}"
+                               readonly required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">OFF Command</label>
+                        <input type="text"
+                               class="form-control"
+                               id="command_led_off"
+                               name="command_led_off"
+                               value="{{ config.command_led_off if config else '' }}"
+                               readonly required>
+                    </div>
+                </div>
+
+                <div class="mt-5">
+                    <button type="submit"
+                            class="btn btn-primary w-100 py-3 shadow"
+                            id="save-btn"
+                            style="display:none;">
+                        <i class="bi bi-cloud-arrow-up-fill me-2"></i>
+                        Apply Configuration
+                    </button>
+                </div>
+            </form>
+
+            {% if config %}
+            <div class="mt-4 pt-4 border-top">
+
+                <form action="{{ url_for('delete_led_config',
+                                        node_id=node.node_id) }}"
+                    method="POST"
+                    onsubmit="return confirm('Confirm delete this configuration?')">
+
+                    <button type="submit"
+                            class="btn btn-link text-danger p-0 text-decoration-none small">
+                        <i class="bi bi-trash3 me-1"></i>
+                        Delete LED configuration
+                    </button>
+
+                </form>
+
+            </div>
+            {% endif %}
+            <!-- ================= RELAY CHANNEL SECTION ================= -->
+                        <div class="group-label mt-4">Relay Channels</div>
+
+                        <button class="btn btn-outline-primary rounded-pill mb-4"
+                                type="button"
+                                onclick="toggleChannelForm()">
+                            + Add Relay Channel
+                        </button>
+
+                        <!-- ADD FORM -->
+                        <div id="channel-form" style="display:none;">
+                            <form method="POST"
+                                action="{{ url_for('add_led_channel', node_id=node.node_id) }}"
+                                class="row g-3 mb-4 channel-box">
+
+                                <div class="col-md-3">
+                                    <input type="text" name="gpio"
+                                        class="form-control"
+                                        placeholder="GPIO (D1, D2...)" required>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <input type="text" name="name"
+                                        class="form-control"
+                                        placeholder="ชื่อสวิต" required>
+                                </div>
+
+                                <div class="col-md-2">
+                                    <button class="btn btn-success w-100">Save</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- TABLE -->
+                        {% if channels %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>GPIO</th>
+                                        <th>Name</th>
+                                        <th width="140"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                        {% for ch in channels %}
+                        <tr>
+                        <td>
+                        <form method="POST"
+                            action="{{ url_for('update_led_channel', channel_id=ch.id) }}">
+
+                        <input type="text"
+                            name="gpio"
+                            value="{{ ch.gpio }}"
+                            class="form-control form-control-sm"
+                            readonly>
+                        </td>
+
+                        <td>
+                        <input type="text"
+                            name="name"
+                            value="{{ ch.name }}"
+                            class="form-control form-control-sm"
+                            readonly>
+                        </td>
+
+                        <td class="d-flex gap-1">
+
+                        <!-- EDIT -->
+                        <button type="button"
+                                class="btn btn-sm btn-outline-primary edit-btn">✏️
+                        </button>
+
+                        <!-- SAVE -->
+                        <button type="submit"
+                                class="btn btn-sm btn-success save-btn"
+                                style="display:none;">✅
+                        </button>
+
+                        </form>
+
+                        <!-- DELETE -->
+                        <form method="POST"
+                            action="{{ url_for('delete_led_channel', channel_id=ch.id) }}"
+                            onsubmit="return confirm('Delete GPIO {{ ch.gpio }} ?')">
+
+                        <button class="btn btn-sm btn-outline-danger">🗑</button>
+                        </form>
+
+                        </td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                            <p class="text-muted">
+                                No relay channels configured.
+                            </p>
+                        {% endif %}
+
+                    </div>
+                </div>
+        </div>
+<script>
+
+document.getElementById('edit-btn').addEventListener('click', function() {
+
+    const fields = [
+        'mqtt_broker',
+        'mqtt_port',
+        'command_led_on',
+        'command_led_off'
+    ];
+
+    fields.forEach(id => {
+        const el = document.getElementById(id);
+        el.removeAttribute('readonly');
+        el.style.backgroundColor = '#ffffff';
+        el.style.borderColor = '#4361ee';
+    });
+
+    document.getElementById('save-btn').style.display = 'block';
+    this.style.display = 'none';
+});
+
+
+function toggleChannelForm() {
+    const form = document.getElementById('channel-form');
+    form.style.display =
+        form.style.display === 'none' ? 'block' : 'none';
+}
+
+
+document.querySelectorAll('.edit-btn').forEach(btn => {
+
+    btn.addEventListener('click', function() {
+
+        const row = this.closest('tr');
+        const inputs = row.querySelectorAll('input');
+
+        inputs.forEach(input => {
+            input.removeAttribute('readonly');
+            input.style.backgroundColor = '#ffffff';
+        });
+
+        row.querySelector('.save-btn').style.display = 'inline-block';
+        this.style.display = 'none';
+
+    });
+
+});
+
+</script>
+
+
+{% endblock %}

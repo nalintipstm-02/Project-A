@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block title %}AC Config - Room {{ room_id }}{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        background-color: #f5f7fb;
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    .page-header {
+        margin-bottom: 2rem;
+    }
+
+    .room-badge {
+        background-color: #e0e7ff;
+        color: #4361ee;
+        padding: 0.5rem 1rem;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .config-card {
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        background-color: #ffffff;
+        overflow: hidden;
+    }
+
+    .card-title-custom {
+        font-weight: 700;
+        color: #2d3748;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #4a5568;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .form-control {
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        border: 1px solid #e2e8f0;
+        background-color: #f8fafc;
+        transition: all 0.2s;
+    }
+
+    .form-control[readonly] {
+        background-color: #f1f5f9;
+        color: #64748b;
+        cursor: not-allowed;
+    }
+
+    .form-control:focus:not([readonly]) {
+        border-color: #4361ee;
+        box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.1);
+        background-color: #fff;
+    }
+
+    .btn {
+        border-radius: 12px;
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        transition: all 0.2s;
+    }
+
+    .btn-edit {
+        background-color: #f1f5f9;
+        color: #475569;
+        border: none;
+    }
+
+    .btn-edit:hover {
+        background-color: #e2e8f0;
+    }
+</style>
+
+<div class="container py-4">
+
+    <!-- Header -->
+    <div class="page-header d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">AC Configuration</h2>
+            <span class="room-badge">
+                <i class="bi bi-geo-alt-fill me-1"></i>
+                Room ID: {{ room_id }}
+            </span>
+        </div>
+        <!--<a href="{{ url_for('nodes', room_id=room_id) }}"
+           class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Back
+        </a>-->
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card config-card shadow-sm">
+                <div class="card-body p-4 p-md-5">
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="card-title-custom mb-0">
+                            <i class="bi bi-gear-wide-connected text-primary"></i>
+                            ตั้งค่าอุปกรณ์
+                        </h5>
+                        <button id="edit-btn" class="btn btn-edit">
+                            <i class="bi bi-pencil-square me-1"></i> แก้ไขการกำหนดค่า
+                        </button>
+                    </div>
+
+                    <form method="POST"
+                          action="{{ url_for('config_air', node_id=node.node_id) }}">
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="rm_air_ip" class="form-label">
+                                    Broadlink IP
+                                </label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="rm_air_ip"
+                                       name="rm_air_ip"
+                                       value="{{ config.rm_air_ip if config else '' }}"
+                                       readonly required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="rm_air_mac" class="form-label">
+                                    Broadlink MAC
+                                </label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="rm_air_mac"
+                                       name="rm_air_mac"
+                                       value="{{ config.rm_air_mac if config else '' }}"
+                                       readonly required>
+                            </div>
+
+                            <div class="col-12">
+                                <label for="ir_command_air_on"
+                                       class="form-label text-success">
+                                    IR Command Air ON
+                                </label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="ir_command_air_on"
+                                       name="ir_command_air_on"
+                                       value="{{ config.ir_command_air_on if config else '' }}"
+                                       readonly required>
+                            </div>
+
+                            <div class="col-12">
+                                <label for="ir_command_air_off"
+                                       class="form-label text-danger">
+                                    IR Command Air OFF
+                                </label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="ir_command_air_off"
+                                       name="ir_command_air_off"
+                                       value="{{ config.ir_command_air_off if config else '' }}"
+                                       readonly required>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit"
+                                    class="btn btn-success w-100"
+                                    id="save-btn"
+                                    style="display:none;">
+                                <i class="bi bi-check-circle me-1"></i>
+                                {{ "Update Configuration" if config else "Save Configuration" }}
+                            </button>
+                        </div>
+
+                    </form>
+
+                    {% if config %}
+                    <div class="mt-4 pt-4 border-top">
+                        <form action="{{ url_for('delete_air_config', node_id=node.node_id) }}"
+                              method="post"
+                              onsubmit="return confirm('Confirm delete this configuration?')">
+                            <button type="submit"
+                                    class="btn btn-link text-danger p-0 text-decoration-none small">
+                                <i class="bi bi-trash3 me-1"></i>
+                                ลบการตั้งค่าของอุปกรณ์นี้
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+document.getElementById('edit-btn').addEventListener('click', function() {
+    const fields = ['rm_air_ip', 'rm_air_mac', 'ir_command_air_on', 'ir_command_air_off'];
+    fields.forEach(id => {
+        const el = document.getElementById(id);
+        el.removeAttribute('readonly');
+        el.style.backgroundColor = '#ffffff';
+    });
+    document.getElementById('save-btn').style.display = 'block';
+    this.style.display = 'none';
+});
+</script>
+
+{% endblock %}

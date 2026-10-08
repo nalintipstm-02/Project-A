@@ -1,0 +1,366 @@
+{% extends "base.html" %}
+
+{% block title %}Smart Classroom Dashboard{% endblock %}
+
+{% block content %}
+
+<style>
+    /* 1. Global & Layout Refresh */
+    body { background-color: #f0f2f5; font-family: 'Inter', sans-serif; color: #334155; }
+    .container { max-width: 1200px; }
+
+    /* 2. Stat Cards (Overview) */
+    .stat-card {
+        border: none;
+        border-radius: 16px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        background: #ffffff;
+    }
+    .stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+    .stat-label { font-size: 0.85rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-value { font-size: 1.75rem; font-weight: 800; color: #1e293b; }
+
+    /* 3. Modern Search Bar */
+    .search-wrapper {
+        background: #fff;
+        border-radius: 12px;
+        padding: 4px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    #searchInput { border: none; box-shadow: none; padding: 10px 15px; }
+    .search-popup {
+        border-radius: 12px;
+        margin-top: 8px;
+        border: none;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+
+    /* 4. Table & Cards Section */
+    .dashboard-card {
+        border: none;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        overflow: hidden;
+    }
+    .card-header-custom {
+        background: #fff;
+        padding: 20px;
+        border-bottom: 1px solid #f1f5f9;
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #1e293b;
+    }
+    .table thead th {
+        background: #f8fafc;
+        color: #64748b;
+        font-weight: 600;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        border-top: none;
+        padding: 12px 20px;
+    }
+    .table td { padding: 15px 20px; vertical-align: middle; font-size: 0.95rem; }
+
+    /* 5. Highlight & Badges */
+    .highlight-row { transition: background 0.5s ease; }
+    .btn-add {
+        border-radius: 10px;
+        font-weight: 600;
+        padding: 8px 20px;
+        transition: all 0.2s;
+    }
+    .btn-add:hover { transform: scale(1.02); }
+
+    /* Icons for Stat Cards (Visual Polish) */
+    .icon-box {
+        width: 40px; height: 40px; 
+        border-radius: 10px; 
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 10px;
+    }
+
+    /* สไตล์สำหรับตัวหนังสือที่ถูกไฮไลท์ */
+    mark.search-highlight {
+        background-color: #ffef9e; /* สีเหลืองทองจางๆ */
+        color: #000;
+        padding: 0 2px;
+        border-radius: 4px;
+        font-weight: bold;
+    }
+
+/* เพิ่มให้แถวที่ค้นหาเจอมีการเคลื่อนไหวเบาๆ */
+    .row-found {
+        animation: highlight-pulse 2s ease-out;
+    }
+
+    @keyframes highlight-pulse {
+        0% { background-color: #fff3cd; }
+        100% { background-color: transparent; }
+    }
+
+    /* สไตล์สำหรับคำที่ค้นหาเจอในตาราง */
+    .search-highlight {
+        background-color: #ffef9e; /* สีเหลือง */
+        color: #000;
+        padding: 0;
+        border-radius: 2px;
+        font-weight: bold;
+    }
+
+/* แถวที่กำลังถูกเลือกหรือมีคำค้นหาตรงกัน */
+    .row-active {
+        background-color: rgba(67, 97, 238, 0.05) !important;
+    }
+
+    .table-scroll{
+    max-height:300px;
+    overflow-y:auto;
+}
+
+.table-scroll thead th{
+    position: sticky;
+    top: 0;
+    background: #f8fafc;
+    z-index: 2;
+}
+    .bg-blue { background: rgba(37, 99, 235, 0.1); color: #2563eb; }
+    .bg-green { background: rgba(22, 163, 74, 0.1); color: #16a34a; }
+    .bg-orange { background: rgba(234, 88, 12, 0.1); color: #ea580c; }
+    .bg-purple { background: rgba(147, 51, 234, 0.1); color: #9333ea; }
+</style>
+
+<div class="container py-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h1 class="fw-bold text-dark m-0">Dashboard</h1>
+            <p class="text-muted m-0 small">รายละเอียดอุปกรณ์ที่ติดตั้งทั้งหมด</p>
+        </div>
+        <a href="{{ url_for('buildings') }}" class="btn btn-primary btn-add shadow-sm">
+            <i class="bi bi-plus-lg me-2"></i>จัดการอาคาร
+        </a>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="card stat-card shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="icon-box bg-blue"><i class="bi bi-building"></i></div>
+                    <div class="stat-label">อาคาร</div>
+                    <div class="stat-value">{{ total_buildings }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="icon-box bg-green"><i class="bi bi-door-open"></i></div>
+                    <div class="stat-label">ห้อง</div>
+                    <div class="stat-value">{{ total_rooms }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="icon-box bg-orange"><i class="bi bi-cpu"></i></div>
+                    <div class="stat-label">อุปกรณ์ที่ติดตั้งทั้งหมด</div>
+                    <div class="stat-value">{{ total_nodes }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="icon-box bg-purple"><i class="bi bi-lightbulb"></i></div>
+                    <div class="stat-label">อุปกรณ์ประเภทLED</div>
+                    <div class="stat-value">{{ total_devices }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-5">
+        <div class="col-md-5">
+            <div class="search-wrapper d-flex align-items-center">
+                <i class="bi bi-search text-muted ms-3"></i>
+                <div class="position-relative flex-grow-1">
+                    <input type="text" id="searchInput" class="form-control border-0" placeholder="ค้นหาอุปกรณ์ หรือห้องเรียน">
+                    <div id="searchResults" class="list-group search-popup"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-card mb-5">
+        <div class="card-header-custom">อุปกรณ์ที่ติดตั้งทั้งหมด</div>
+        <div class="card-body p-0">
+            <div class="table-scroll">
+                <table class="table table-hover mb-0" id="recentTable">
+                    <thead>
+                        <tr>
+                            <th>ห้อง</th>
+                            <th>ประเภทอุปกรณ์</th>
+                            <th>วันที่ติดตั้ง</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if recent_devices %}
+                            {% for device in recent_devices %}
+                            <tr class="highlight-row">
+                                <td class="fw-bold">{{ device.room_name }}</td>
+                                <td><span class="badge bg-light text-dark border">{{ device.node_type }}</span></td>
+                                <td class="text-muted small">{{ device.created_at }}</td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr><td colspan="3" class="text-center text-muted py-5">ยังไม่มีอุปกรณ์ที่ลงทะเบียน</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-card mb-5">
+        <div class="card-header-custom">อุปกรณ์ที่ติดตั้งประเภท LED</div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="deviceTable">
+                    <thead>
+                        <tr>
+                            <th>อุปกรณ์</th>
+                            <th>ชื่ออุปกรณ์</th>
+                            <th>ประเภท</th>
+                            <th>ห้อง</th>
+                            <th>วันที่ติดตั้ง</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if devices %}
+                            {% for d in devices %}
+                            <tr class="highlight-row">
+                                <td class="fw-bold text-primary">{{ d.device_name }}</td>
+                                <td>{{ d.node_name }}</td>
+                                <td><span class="badge rounded-pill bg-light text-secondary border">{{ d.node_type }}</span></td>
+                                <td><i class="bi bi-geo-alt me-1 text-muted"></i>{{ d.room_name }}</td>
+                                <td class="text-muted small">{{ d.installed_at }}</td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr><td colspan="5" class="text-center text-muted py-5">ไม่มีอุปกรณ์ที่ติดตั้ง</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-card">
+        <div class="card-header-custom">จำนวนอุปกรณ์ที่ติดตั้งในห้อง</div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>ห้องเรียน</th>
+                            <th class="text-center">อุปกรณ์ทั้งหมด</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if devices_per_room %}
+                            {% for r in devices_per_room %}
+                            <tr>
+                                <td>{{ r.room_name }}</td>
+                                <td class="text-center fw-bold text-primary">{{ r.total_devices }}</td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr><td colspan="2" class="text-center text-muted py-5">ไม่พบอุปกรณ์</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const input = document.getElementById("searchInput");
+    const results = document.getElementById("searchResults");
+
+    // ฟังก์ชันสำหรับล้าง Highlight เดิม
+    function clearHighlights(rows) {
+        rows.forEach(row => {
+            row.classList.remove("row-active");
+            Array.from(row.cells).forEach(cell => {
+                // คืนค่าข้อความปกติ (ลบ <mark> ออก)
+                if (cell.querySelector(".search-highlight")) {
+                    cell.innerHTML = cell.textContent;
+                }
+            });
+        });
+    }
+
+    input.addEventListener("keyup", function() {
+        let filter = input.value.trim();
+        let filterLower = filter.toLowerCase();
+        
+        results.innerHTML = "";
+        results.style.display = "none";
+
+        let rows = document.querySelectorAll("#recentTable tbody tr, #deviceTable tbody tr");
+        
+        // ล้าง Highlight เก่าก่อนเริ่มค้นหาใหม่
+        clearHighlights(rows);
+
+        if (filter.length < 1) return;
+
+        let shown = new Set();
+        const regex = new RegExp(`(${filter})`, 'gi');
+
+        rows.forEach(row => {
+            let foundInRow = false;
+            
+            // วนลูปเช็คทุก Cell ในแถว
+            Array.from(row.cells).forEach(cell => {
+                let text = cell.textContent;
+                if (text.toLowerCase().includes(filterLower)) {
+                    // ไฮไลท์คำที่ตรงกันในตาราง
+                    cell.innerHTML = text.replace(regex, '<mark class="search-highlight">$1</mark>');
+                    foundInRow = true;
+                }
+            });
+
+            if (foundInRow) {
+                row.classList.add("row-active");
+                
+                // จัดการส่วน Popup (แสดงเฉพาะคอลัมน์แรกเพื่อเป็นตัวเลือก)
+                let originalValue = row.cells[0].textContent;
+                if (!shown.has(originalValue)) {
+                    shown.add(originalValue);
+                    let item = document.createElement("a");
+                    item.className = "list-group-item list-group-item-action border-0 py-3";
+                    item.innerHTML = `<i class="bi bi-search me-3 text-muted"></i> ${originalValue.replace(regex, '<mark class="search-highlight">$1</mark>')}`;
+
+                    item.onclick = function() {
+                        row.scrollIntoView({ behavior: "smooth", block: "center" });
+                        results.style.display = "none";
+                        // ไม่ต้องล้าง input เพื่อให้ผู้ใช้เห็น highlight ค้างไว้ในตาราง
+                    };
+                    results.appendChild(item);
+                }
+                results.style.display = "block";
+            }
+        });
+    });
+});
+</script>
+
+{% endblock %}

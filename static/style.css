@@ -1,0 +1,11 @@
+/* Add basic styling here */
+body {
+    font-family: Arial, sans-serif;
+}
+h1 {
+    color: #333;
+}
+a {
+    text-decoration: none;
+    color: blue;
+}

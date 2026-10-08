@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Edit' if building_id else 'Add' }} Building{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        background-color: #f5f7fb;
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    .form-card {
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        background-color: #ffffff;
+        max-width: 600px;
+        margin: 2rem auto;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #4a5568;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .form-control {
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        border: 1px solid #e2e8f0;
+        transition: all 0.2s ease;
+    }
+
+    .form-control:focus {
+        border-color: #4361ee;
+        box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.1);
+        outline: none;
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+
+    .btn-primary {
+        background-color: #4361ee;
+        border: none;
+    }
+
+    .btn-primary:hover {
+        background-color: #3751d4;
+        transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+        background-color: #f1f5f9;
+        border: none;
+        color: #64748b;
+    }
+
+    .btn-secondary:hover {
+        background-color: #e2e8f0;
+        color: #475569;
+    }
+
+    .page-title {
+        color: #2d3748;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+    }
+</style>
+
+<div class="container py-5">
+    <div class="text-center mb-4">
+        <h2 class="page-title">
+            <i class="bi bi-building-add me-2 text-primary"></i>
+            {{ 'Edit' if building_id else 'Add' }} Building
+        </h2>
+        <p class="text-muted small">กรอกรายละเอียดอาคาร</p>
+    </div>
+
+    <div class="card form-card">
+        <div class="card-body p-4 p-md-5">
+            <form method="post">
+
+                <div class="mb-4">
+                    <label for="building_name" class="form-label">
+                        <i class="bi bi-info-circle me-1"></i> อาคาร
+                    </label>
+                    <input type="text"
+                           class="form-control"
+                           id="building_name"
+                           name="building_name"
+                           placeholder="เช่น SC09"
+                           required
+                           value="{{ building.building_name if building else '' }}">
+                </div>
+
+                <div class="mb-5">
+                    <label for="location" class="form-label">
+                        <i class="bi bi-geo-alt me-1"></i> Location
+                    </label>
+                    <input type="text"
+                           class="form-control"
+                           id="location"
+                           name="location"
+                           placeholder="เช่น ชั้น3"
+                           required
+                           value="{{ building.location if building else '' }}">
+                </div>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="button"
+                            onclick="history.back()"
+                            class="btn btn-secondary px-4 me-md-2">
+                            Cancel
+                    </button>
+
+                    <button type="submit"
+                            class="btn btn-primary px-5 shadow-sm">
+                        <i class="bi bi-check2-circle me-1"></i> Save
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

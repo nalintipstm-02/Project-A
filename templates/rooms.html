@@ -1,0 +1,207 @@
+<!-- rooms.html-->
+{% extends "base.html" %}
+
+{% block title %}Rooms Management{% endblock %}
+
+{% block content %}
+
+<style>
+/* Table & Container Styling */
+.table-container {
+background: #ffffff;
+border-radius: 20px;
+box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+border: 1px solid rgba(0, 0, 0, 0.03);
+overflow: hidden;
+}
+
+.table thead th {
+    background-color: #f8fafc;
+    padding: 1rem 1.5rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+    color: #64748b;
+    border-bottom: 2px solid #f1f5f9;
+}
+
+.table tbody td {
+    padding: 1.2rem 1.5rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+/* Info Badge Styling */
+.room-name-text {
+    font-weight: 700;
+    color: #1e293b;
+    font-size: 1rem;
+}
+
+.badge-floor {
+    background-color: #4361ee;
+    color: white;
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-weight: 700;
+    margin-right: 8px;
+}
+
+.room-type-pill {
+    background-color: #f1f5f9;
+    color: #475569;
+    padding: 0.35rem 1rem;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Action Buttons */
+.btn-manage {
+    background-color: #4361ee;
+    color: white;
+    border-radius: 12px;
+    font-weight: 600;
+    padding: 0.6rem 1.2rem;
+    transition: all 0.3s;
+    border: none;
+}
+.btn-manage:hover {
+    background-color: #3751d4;
+    color: white;
+    transform: scale(1.02);
+    box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+}
+
+.btn-circle-action {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    border: 1px solid #e2e8f0;
+    background: white;
+}
+.btn-edit-icon { color: #f59e0b; }
+.btn-edit-icon:hover { background-color: #fffbeb; border-color: #f59e0b; }
+
+.btn-delete-icon { color: #ef4444; border: none; }
+.btn-delete-icon:hover { background-color: #fef2f2; color: #dc2626; }
+
+.cluster-id-badge {
+    font-size: 0.75rem;
+    background: #e0e7ff;
+    color: #4361ee;
+    padding: 0.4rem 1rem;
+    border-radius: 10px;
+    font-weight: 700;
+}
+
+
+</style>
+
+<div class="container py-4">
+<!-- Page Header -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+<div>
+<h2 class="fw-bold text-dark mb-1">ห้อง</h2>
+<span class="cluster-id-badge">
+<i class="bi bi-diagram-3-fill me-1"></i> Cluster ID: {{ cluster_id }}
+</span>
+</div>
+<div class="d-flex gap-2">
+<!-- ป้องกัน Error ด้วยการใช้ History Back แทนการสร้าง URL ใหม่ -->
+<!--<button onclick="window.history.back()" class="btn btn-outline-secondary rounded-pill px-4 fw-bold shadow-sm">
+<i class="bi bi-arrow-left me-1"></i> Back
+</button>-->
+<a href="{{ url_for('add_room', cluster_id=cluster_id) }}" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm">
+<i class="bi bi-plus-lg me-1"></i> เพิ่มห้อง
+</a>
+</div>
+</div>
+
+<!-- Table Section -->
+<div class="table-container">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th class="ps-4">Room Detail</th>
+                    <th>Floor Location</th>
+                    <th>Classification</th>
+                    <th class="text-end pe-4">Control & Setup</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for room in rooms %}
+                <tr>
+                    <td class="ps-4">
+                        <div class="room-name-text">{{ room.room_name }}</div>
+                        <small class="text-muted">Room ID: {{ room.room_id }}</small>
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <span class="badge-floor">{{ room.floor_number }}</span>
+                            <span class="text-secondary small fw-bold">Level</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="room-type-pill">
+                            <i class="bi bi-door-open"></i> {{ room.room_type }}
+                        </span>
+                    </td>
+                    <td class="pe-4">
+                        <div class="d-flex justify-content-end align-items-center gap-2">
+                            <!-- Primary Action -->
+                            <a href="{{ url_for('nodes', room_id=room.room_id) }}" class="btn btn-manage shadow-sm">
+                                <i class="bi bi-cpu-fill me-1"></i> จัดการอุปกรณ์
+                            </a>
+                            
+                            <!-- Edit Icon -->
+                            <a href="{{ url_for('edit_room', room_id=room.room_id, cluster_id=cluster_id) }}" 
+                               class="btn-circle-action btn-edit-icon" title="Edit Room Info">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
+
+                            <!-- Delete Icon -->
+                            <form action="{{ url_for('delete_room', room_id=room.room_id, cluster_id=cluster_id) }}" 
+                                method="post"
+                                onsubmit="if(confirm('Erase this room? All devices within will be disconnected.')){this.querySelector('button').disabled=true;return true;} return false;">
+                                <button type="submit" class="btn-circle-action btn-delete-icon">
+                                    <i class="bi bi-trash3-fill"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="text-center py-5">
+                        <div class="py-4">
+                            <i class="bi bi-inbox text-muted opacity-25" style="font-size: 3rem;"></i>
+                            <p class="text-muted mt-2">No rooms registered in this cluster.</p>
+                            <a href="{{ url_for('add_room', cluster_id=cluster_id) }}" class="btn btn-primary btn-sm rounded-pill mt-2">
+                                Add your first room
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+</div>
+{% endblock %}

@@ -1,0 +1,213 @@
+<!-- _editnode.html-->
+{% extends "base.html" %}
+
+{% block title %}Edit Node - {{ node.node_name }}{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        background-color: #f5f7fb;
+    }
+
+    /* ตกแต่ง Card ของฟอร์ม */
+    .form-card {
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        background-color: #ffffff;
+        max-width: 600px;
+        margin: 3rem auto;
+    }
+
+    /* ปรับแต่ง Label และ Input */
+    .form-label {
+        font-weight: 600;
+        color: #4a5568;
+        margin-bottom: 0.6rem;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .form-control, .form-select {
+        border-radius: 12px;
+        padding: 0.8rem 1rem;
+        border: 1px solid #e2e8f0;
+        transition: all 0.2s ease;
+        background-color: #f8fafc;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #4361ee;
+        box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.1);
+        background-color: #ffffff;
+        outline: none;
+    }
+
+    /* ตกแต่งปุ่ม */
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+
+    .btn-primary {
+        background-color: #4361ee;
+        border: none;
+    }
+
+    .btn-primary:hover {
+        background-color: #3751d4;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(67, 97, 238, 0.2);
+    }
+
+    .btn-secondary {
+        background-color: #f1f5f9;
+        border: none;
+        color: #64748b;
+    }
+
+    .btn-secondary:hover {
+        background-color: #e2e8f0;
+        color: #475569;
+    }
+
+    .page-title {
+        color: #2d3748;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+    }
+
+    .icon-box {
+        width: 55px;
+        height: 55px;
+        background: rgba(67, 97, 238, 0.1);
+        color: #4361ee;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 16px;
+        margin: 0 auto 1.5rem;
+    }
+
+    .id-badge {
+        font-size: 0.75rem;
+        background-color: #f1f5f9;
+        color: #64748b;
+        padding: 0.2rem 0.6rem;
+        border-radius: 6px;
+        margin-top: 0.5rem;
+        display: inline-block;
+    }
+    textarea.form-control {
+        min-height: 120px;
+        resize: none;
+        line-height: 1.5;
+    }
+</style>
+
+<div class="container py-4">
+    <div class="card form-card">
+        <div class="card-body p-4 p-md-5">
+            <!-- Header Section -->
+            <div class="text-center">
+                <div class="icon-box shadow-sm">
+                    <i class="bi bi-cpu-fill fs-4"></i>
+                </div>
+                <h2 class="page-title mb-1">Edit Node</h2>
+                <span class="id-badge fw-medium">Node ID: #{{ node.node_id }}</span>
+                <p class="text-muted small mt-3 mb-4">Update device characteristics and specifications</p>
+            </div>
+
+            <form method="post">
+                <!-- Node Name -->
+                <div class="mb-4">
+                    <label for="node_name" class="form-label">
+                        <i class="bi bi-alphabet-uppercase me-1 text-primary"></i> Node Name
+                    </label>
+                    <input type="text" class="form-control fw-medium" id="node_name" name="node_name" 
+                           value="{{ node.node_name }}" required placeholder="e.g. Master Light, AC Unit 1">
+                </div>
+
+                <!-- Node Type -->
+                <div class="mb-4">
+                    <label for="node_type" class="form-label">
+                        <i class="bi bi-list-stars me-1 text-primary"></i> Node Type
+                    </label>
+                    <select class="form-select fw-medium" id="node_type" name="node_type" required>
+                        <option value="led" {% if node.node_type=='led' %}selected{% endif %}>LED Light</option>
+                        <option value="projector" {% if node.node_type=='projector' %}selected{% endif %}>Projector</option>
+                        <option value="air_conditioner" {% if node.node_type=='air_conditioner' %}selected{% endif %}>Air Conditioner</option>
+                        <option value="audio_equipment" {% if node.node_type=='audio_equipment' %}selected{% endif %}>Audio Equipment</option>
+                        <option value="computer" {% if node.node_type=='computer' %}selected{% endif %}>Computer</option>
+                        <option value="door" {% if node.node_type=='door' %}selected{% endif %}>Smart Door</option>
+                    </select>
+                </div>
+                <div class="mb-4 {% if node.node_type != 'computer' %}d-none{% endif %}" id="computer_role_group">
+
+                    <label class="form-label">
+                        <i class="bi bi-person-badge me-1 text-primary"></i> Computer Role
+                    </label>
+
+                    <select class="form-select fw-medium" name="computer_role">
+                        <option value="">-- Select Role --</option>
+
+                        <option value="teacher"
+                            {% if node.computer_role=='teacher' %}selected{% endif %}>
+                            Teacher Computer
+                        </option>
+
+                        <option value="student"
+                            {% if node.computer_role=='student' %}selected{% endif %}>
+                            Student Computer
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Detail -->
+                <div class="mb-4">
+                    <label for="detail" class="form-label">
+                        <i class="bi bi-info-circle me-1 text-primary"></i> Detail / Description
+                    </label>
+                    <textarea class="form-control" id="detail" name="detail" rows="3" 
+                              placeholder="Describe the location or specific function of this node...">{{ node.detail or '' }}</textarea>
+                </div>
+
+                <input type="hidden" name="room_id" value="{{ request.args.get('room_id', '') }}">
+
+                <!-- Action Buttons -->
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-5 border-top pt-4">
+                    <button type="button"
+                            onclick="history.back()"
+                            class="btn btn-secondary px-4 me-md-2">
+                            Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary px-5 shadow-sm">
+                        <i class="bi bi-save2 me-2"></i>Update Node
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+
+const nodeType = document.getElementById("node_type")
+const roleGroup = document.getElementById("computer_role_group")
+
+function toggleRole(){
+
+    if(nodeType.value === "computer"){
+        roleGroup.style.display = "block"
+    }else{
+        roleGroup.style.display = "none"
+    }
+
+}
+
+nodeType.addEventListener("change", toggleRole)
+toggleRole()
+</script>
+{% endblock %}

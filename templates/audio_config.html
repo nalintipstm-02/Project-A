@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}Audio Config - Room {{ room_id }}{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        background-color: #f5f7fb;
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    .page-header {
+        margin-bottom: 2rem;
+    }
+
+    .room-badge {
+        background-color: #e0e7ff;
+        color: #4361ee;
+        padding: 0.5rem 1rem;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .config-card {
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        background-color: #ffffff;
+        overflow: hidden;
+    }
+
+    .card-title-custom {
+        font-weight: 700;
+        color: #2d3748;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #4a5568;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .form-control {
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        border: 1px solid #e2e8f0;
+        background-color: #f8fafc;
+        transition: all 0.2s;
+    }
+
+    .form-control[readonly] {
+        background-color: #f1f5f9;
+        color: #64748b;
+        cursor: not-allowed;
+    }
+
+    .form-control:focus:not([readonly]) {
+        border-color: #4361ee;
+        box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.1);
+        background-color: #fff;
+    }
+
+    .btn {
+        border-radius: 12px;
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        transition: all 0.2s;
+    }
+
+    .btn-edit {
+        background-color: #f1f5f9;
+        color: #475569;
+        border: none;
+    }
+
+    .btn-edit:hover {
+        background-color: #e2e8f0;
+    }
+</style>
+
+<div class="container py-4">
+    <!-- Header -->
+    <div class="page-header d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">Audio Equipment Config</h2>
+            <span class="room-badge">
+                <i class="bi bi-speaker-fill me-1"></i>
+                Room ID: {{ room_id }}
+            </span>
+        </div>
+        <!--<a href="{{ url_for('nodes', room_id=room_id) }}"
+           class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Back
+        </a>-->
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card config-card shadow-sm">
+                <div class="card-body p-4 p-md-5">
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="card-title-custom mb-0">
+                            <i class="bi bi-broadcast text-primary"></i>
+                            MQTT Connection Settings
+                        </h5>
+                        <button id="edit-btn" class="btn btn-edit">
+                            <i class="bi bi-pencil-square me-1"></i> Edit Config
+                        </button>
+                    </div>
+
+                    <form method="POST"
+                          action="{{ url_for('config_audio', node_id=node.node_id) }}">
+
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <label class="form-label">MQTT Broker Address</label>
+                                <input type="text" class="form-control"
+                                       name="mqtt_broker"
+                                       value="{{ config.mqtt_broker if config else '' }}"
+                                       readonly required>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">MQTT Port</label>
+                                <input type="number" class="form-control"
+                                       name="mqtt_port"
+                                       value="{{ config.mqtt_port if config else '' }}"
+                                       readonly required>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label text-success">
+                                    Command ON (Topic/Message)
+                                </label>
+                                <input type="text" class="form-control"
+                                       name="command_audio_on"
+                                       value="{{ config.command_audio_on if config else '' }}"
+                                       readonly required>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label text-danger">
+                                    Command OFF (Topic/Message)
+                                </label>
+                                <input type="text" class="form-control"
+                                       name="command_audio_off"
+                                       value="{{ config.command_audio_off if config else '' }}"
+                                       readonly required>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit"
+                                    class="btn btn-success w-100"
+                                    id="save-btn"
+                                    style="display:none;">
+                                <i class="bi bi-check-circle me-1"></i>
+                                {{ "Update Configuration" if config else "Add Configuration" }}
+                            </button>
+                        </div>
+                    </form>
+
+                    {% if config %}
+                    <div class="mt-4 pt-4 border-top">
+                        <form action="{{ url_for('delete_audio_config', node_id=node.node_id) }}"
+                              method="post"
+                              onsubmit="return confirm('Confirm delete this configuration?')">
+                            <button type="submit"
+                                    class="btn btn-link text-danger p-0 text-decoration-none small">
+                                <i class="bi bi-trash3 me-1"></i>
+                                Delete audio configuration
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('edit-btn').addEventListener('click', function() {
+    document.querySelectorAll('input').forEach(i => {
+        i.removeAttribute('readonly');
+        i.style.backgroundColor = '#ffffff';
+    });
+    document.getElementById('save-btn').style.display = 'block';
+    this.style.display = 'none';
+});
+</script>
+
+{% endblock %}
